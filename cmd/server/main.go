@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Ошибка подключения к БД: %v", err)
 	}
-	defer pool.Close()
+	defer pool.Close() // закрываем соединение с БД при выходе из функции
 
 	// Создаем репозиторий и сервис
 	balanceRepo := balance.NewRepository(pool)

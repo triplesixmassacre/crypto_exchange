@@ -6,7 +6,6 @@ option go_package = "crypto_exchange/api/pb";
 service BalanceService {
     rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
     rpc UpdateBalance(UpdateBalanceRequest) returns (UpdateBalanceResponse);
-    rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse);
 }
 
 message GetBalanceRequest {
@@ -26,13 +25,4 @@ message UpdateBalanceRequest {
 
 message UpdateBalanceResponse {
     double new_amount = 1;
-}
-
-message CreateWalletRequest {
-    int64 user_id = 1;
-    string public_key = 2;
-}
-
-message CreateWalletResponse {
-    bool success = 1;
 }

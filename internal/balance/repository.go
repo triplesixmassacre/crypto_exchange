@@ -3,6 +3,7 @@ package balance
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -33,26 +34,65 @@ func (r *Repository) GetBalance(ctx context.Context, userID int64, asset string)
 
 // UpdateBalance обновляет баланс пользователя
 func (r *Repository) UpdateBalance(ctx context.Context, userID int64, asset string, amount float64) error {
-	_, err := r.db.Exec(ctx, // Exec выполняет запрос и не ожидает возврата
-		`INSERT INTO balances (user_id, asset, amount) 
-		VALUES ($1, $2, $3)
-		ON CONFLICT (user_id, asset) 
-		DO UPDATE SET amount = balances.amount + $3`,
-		userID, asset, amount) // ON CONFLICT обновляет запись, если она уже есть
+	log.Printf("Начало транзакции для user_id: %d, asset: %s, amount: %f", userID, asset, amount)
+
+	// Начало транзакции
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("ошибка начала транзакции: %v", err) // юзаем Errorf, а не Println, потому что ждём возврата типа error
+	}
+	defer tx.Rollback(ctx)
+
+	// Блокируем строку для обновления с помощью FOR UPDATE
+	var currentAmount float64
+	err = tx.QueryRow(ctx,
+		`SELECT amount 
+		FROM balances 
+		WHERE user_id = $1 AND asset = $2
+		FOR UPDATE`,
+		userID, asset).Scan(&currentAmount)
+	if err != nil {
+		return fmt.Errorf("ошибка получения баланса: %v", err)
+	}
+
+	log.Printf("Текущий баланс: %f", currentAmount)
+
+	// Проверяем баланс
+	if currentAmount + amount < 0 { // бля я не ебу как проверить условие помимо 0, а типа вот суммы
+		return fmt.Errorf("недостаточно средств")
+	}
+
+	// Обновление баланса
+	_, err = tx.Exec(ctx,
+		`UPDATE balances
+	SET amount = amount + $3
+	WHERE user_id = $1 AND asset = $2`,
+		userID, asset, amount)
 	if err != nil {
 		return fmt.Errorf("ошибка обновления баланса: %v", err)
 	}
+
+	// Окончание транзакции
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("ошибка подтверждения транзакции: %v", err)
+	}
+
+	log.Printf("Транзакция успешно завершена для user_id: %d, asset: %s", userID, asset)
 	return nil
 }
 
-// CreateWallet создает новый кошелек
-func (r *Repository) CreateWallet(ctx context.Context, userID int64, publicKey string, seedPhrase string) error {
-	_, err := r.db.Exec(ctx,
-		`INSERT INTO users (id, public_key, seed_phrase) 
-		VALUES ($1, $2, $3)`,
-		userID, publicKey, seedPhrase)
+// BalanceExists проверяет существование баланса
+func (r *Repository) BalanceExists(ctx context.Context, userID int64, asset string) (bool, error) {
+	var exists bool = true
+	err := r.db.QueryRow(ctx,
+		`SELECT EXISTS(
+			SELECT 1 
+			FROM balances 
+			WHERE user_id = $1 AND asset = $2
+		)`,
+		userID, asset).Scan(&exists)
 	if err != nil {
-		return fmt.Errorf("ошибка создания кошелька: %v", err)
+		return false, fmt.Errorf("ошибка проверки существования баланса: %v", err)
 	}
-	return nil
+	return exists, nil
 }

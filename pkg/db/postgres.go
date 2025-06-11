@@ -19,10 +19,10 @@ type Config struct {
 
 // NewPostgresDB создает новое подключение к PostgreSQL
 func NewPostgresDB(cfg Config) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", // dsn - data source name, строка для подключения к БД
 	cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName)
-
-	pool, err := pgxpool.New(context.Background(), dsn)
+	
+	pool, err := pgxpool.New(context.Background(), dsn) // pgxpool - пул соединений с БД
 	if err != nil {
 		log.Printf("ошибка подключения к БД: %v", err)
 		return nil, err

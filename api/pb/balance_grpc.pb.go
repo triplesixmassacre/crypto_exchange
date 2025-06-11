@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	BalanceService_GetBalance_FullMethodName    = "/balance.BalanceService/GetBalance"
 	BalanceService_UpdateBalance_FullMethodName = "/balance.BalanceService/UpdateBalance"
-	BalanceService_CreateWallet_FullMethodName  = "/balance.BalanceService/CreateWallet"
 )
 
 // BalanceServiceClient is the client API for BalanceService service.
@@ -30,7 +29,6 @@ const (
 type BalanceServiceClient interface {
 	GetBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*GetBalanceResponse, error)
 	UpdateBalance(ctx context.Context, in *UpdateBalanceRequest, opts ...grpc.CallOption) (*UpdateBalanceResponse, error)
-	CreateWallet(ctx context.Context, in *CreateWalletRequest, opts ...grpc.CallOption) (*CreateWalletResponse, error)
 }
 
 type balanceServiceClient struct {
@@ -61,23 +59,12 @@ func (c *balanceServiceClient) UpdateBalance(ctx context.Context, in *UpdateBala
 	return out, nil
 }
 
-func (c *balanceServiceClient) CreateWallet(ctx context.Context, in *CreateWalletRequest, opts ...grpc.CallOption) (*CreateWalletResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateWalletResponse)
-	err := c.cc.Invoke(ctx, BalanceService_CreateWallet_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // BalanceServiceServer is the server API for BalanceService service.
 // All implementations must embed UnimplementedBalanceServiceServer
 // for forward compatibility.
 type BalanceServiceServer interface {
 	GetBalance(context.Context, *GetBalanceRequest) (*GetBalanceResponse, error)
 	UpdateBalance(context.Context, *UpdateBalanceRequest) (*UpdateBalanceResponse, error)
-	CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletResponse, error)
 	mustEmbedUnimplementedBalanceServiceServer()
 }
 
@@ -93,9 +80,6 @@ func (UnimplementedBalanceServiceServer) GetBalance(context.Context, *GetBalance
 }
 func (UnimplementedBalanceServiceServer) UpdateBalance(context.Context, *UpdateBalanceRequest) (*UpdateBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateBalance not implemented")
-}
-func (UnimplementedBalanceServiceServer) CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateWallet not implemented")
 }
 func (UnimplementedBalanceServiceServer) mustEmbedUnimplementedBalanceServiceServer() {}
 func (UnimplementedBalanceServiceServer) testEmbeddedByValue()                        {}
@@ -154,24 +138,6 @@ func _BalanceService_UpdateBalance_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BalanceService_CreateWallet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateWalletRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(BalanceServiceServer).CreateWallet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: BalanceService_CreateWallet_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BalanceServiceServer).CreateWallet(ctx, req.(*CreateWalletRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // BalanceService_ServiceDesc is the grpc.ServiceDesc for BalanceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -186,10 +152,6 @@ var BalanceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateBalance",
 			Handler:    _BalanceService_UpdateBalance_Handler,
-		},
-		{
-			MethodName: "CreateWallet",
-			Handler:    _BalanceService_CreateWallet_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
