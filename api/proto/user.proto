@@ -1,0 +1,25 @@
+syntax = "proto3";
+package balance;
+
+option go_package = "crypto_exchange/api/pb";
+
+service UserService {
+    rpc Register(RegisterRequest) returns (RegisterResponse);
+    rpc Login(LoginRequest) returns (LoginResponse);
+}
+
+message RegisterRequest {
+    string public_key = 1;
+}
+
+message RegisterResponse {
+    int64 user_id = 1;
+}
+
+message LoginRequest {
+    string public_key = 1;
+}
+
+message LoginResponse {
+    int64 user_id = 1;
+}

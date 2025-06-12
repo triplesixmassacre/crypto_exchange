@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	db "crypto_exchange/pkg/db"
 )
 
 // Repository для работы с балансами
@@ -20,16 +21,16 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 
 // GetBalance получает баланс пользователя
 func (r *Repository) GetBalance(ctx context.Context, userID int64, asset string) (float64, error) {
-	var amount float64
+	var balance db.Balances
 	err := r.db.QueryRow(ctx, // QueryRow выполняет запрос и ожидает возврат, то есть amount
 		`SELECT amount 
 		FROM balances 
 		WHERE user_id = $1 AND asset = $2`,
-		userID, asset).Scan(&amount) // с помощью Scan копируем результат запроса в переменную amount
+		userID, asset).Scan(&balance.Amount) // с помощью Scan копируем результат запроса в переменную amount
 	if err != nil {
 		return 0, fmt.Errorf("ошибка получения баланса: %v", err)
 	}
-	return amount, nil
+	return balance.Amount, nil
 }
 
 // UpdateBalance обновляет баланс пользователя
@@ -41,7 +42,7 @@ func (r *Repository) UpdateBalance(ctx context.Context, userID int64, asset stri
 	if err != nil {
 		return fmt.Errorf("ошибка начала транзакции: %v", err) // юзаем Errorf, а не Println, потому что ждём возврата типа error
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) // откатываем, если происходит ошибка
 
 	// Блокируем строку для обновления с помощью FOR UPDATE
 	var currentAmount float64

@@ -1,0 +1,44 @@
+syntax = "proto3";
+package balance;
+
+option go_package = "crypto_exchange/api/pb";
+
+service TransactionHistoryService {
+    rpc GetHistory(GetHistoryRequest) returns (GetHistoryResponse);
+    rpc AddTransaction(AddTransactionRequest) returns (AddTransactionResponse);
+}
+
+message GetHistoryRequest {
+    int64 user_id = 1;
+}
+message GetHistoryResponse{
+    repeated Transaction transactions = 1;
+}
+
+message Transaction {
+    int64 id = 1;
+    int64 user_id = 2;
+    string asset = 3;
+    double amount = 4;
+    string trans_type = 5;
+    string status = 6;
+    string trans_hash = 7;
+    int64 from_user_id = 8;
+    int64 to_user_id = 9;
+    string created_at = 10;
+}
+
+message AddTransactionRequest {
+    int64 user_id = 1;
+    string asset = 2;
+    double amount = 3;
+    string trans_type = 4;
+    string status = 5;
+    string trans_hash = 6;
+    int64 from_user_id = 7;
+    int64 to_user_id = 8;
+}
+
+message AddTransactionResponse {
+    int64 id = 1;
+}
