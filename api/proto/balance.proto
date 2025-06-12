@@ -26,3 +26,4 @@ message UpdateBalanceRequest {
 message UpdateBalanceResponse {
     double new_amount = 1;
 }
+
