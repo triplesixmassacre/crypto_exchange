@@ -52,15 +52,28 @@ func CreateTx(keychain KeyChain, conn *ethclient.Client, toAddressString *string
 		Data:      nil,
 	}
 
+<<<<<<< HEAD
 	signer := types.NewLondonSigner(chainID)
 	signedTx, err := types.SignNewTx(&keychain.PrivateKey, signer, &txData)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign tx: %v", err)
+=======
+	// newTx := types.NewTx(&txData)
+
+	signer := types.NewLondonSigner(chainID)
+	signedTx, err := types.SignNewTx(&keychain.PrivateKey, signer, &txData)
+	if err != nil {
+		return "", fmt.Errorf("Failed to sign tx: %v", err)
+>>>>>>> 818eb69afb0aa3a363e0a4e046f986d202e43f22
 	}
 
 	err = conn.SendTransaction(ctx, signedTx)
 	if err != nil {
+<<<<<<< HEAD
 		return "", fmt.Errorf("failed to send tx: %v", err)
+=======
+		return "", fmt.Errorf("Failed to send tx: %v", err)
+>>>>>>> 818eb69afb0aa3a363e0a4e046f986d202e43f22
 	}
 
 	return signedTx.Hash().Hex(), nil
