@@ -4,10 +4,18 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"log"
+<<<<<<< HEAD
+	"regexp"
+	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+=======
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+>>>>>>> 818eb69afb0aa3a363e0a4e046f986d202e43f22
 )
 
 type KeyChain struct {
@@ -36,6 +44,58 @@ func importWallet(privateKeyECDSA *ecdsa.PrivateKey) (keychain KeyChain, err err
 	return keychain, nil
 }
 
+<<<<<<< HEAD
+func preparePrivateKey(s string) (preparedPrivateKey string, err error) {
+	// Проверка корректности введенного PrivateKey
+	// Функция убирает все спец и запрещенные символы
+	// PrivateKey 4битный, включает в себя 0-9 и a-f, остальные буквы не могут
+	// находиться в private key впринципе
+	lowercase := strings.ToLower(s)
+
+	cleaned := strings.TrimSpace(lowercase)
+	cleaned = regexp.MustCompile(`[\s]+`).ReplaceAllString(cleaned, "")
+
+	// Условие ниже описывает случай, когда строка после удаления всех пробелов
+	// оказалось пустой, пустая строка в параметре ключа означает генерацию
+	// нового приватного ключа, поэтому возвращается пустая строка без ошибок
+	if cleaned == "" {
+		return "", nil
+	}
+
+	if !regexp.MustCompile(`^[a-f0-9]+$`).MatchString(cleaned) {
+		return "", fmt.Errorf("error: string contains invalid characters (only a-f and 0-9 allowed)")
+	}
+
+	if len(cleaned) != 64 {
+		return "", fmt.Errorf("incorrect input len")
+	}
+
+	return s, nil
+}
+
+func ImportOrGenerateWallet(privateKeyHex string) (keychain KeyChain, err error) {
+	var privateKeyECDSA *ecdsa.PrivateKey
+
+	preparePrivateKeyHex, err := preparePrivateKey(privateKeyHex)
+	if err != nil {
+		log.Fatalf("Error during prepare key: %v", err)
+	}
+
+	if preparePrivateKeyHex == "" {
+		privateKeyECDSA, err = crypto.GenerateKey()
+		// log.Printf("New Private Key: %v", privateKeyECDSA)
+		if err != nil {
+			return KeyChain{}, fmt.Errorf("error during create key: %v", err)
+		}
+	} else {
+		if err != nil {
+			return KeyChain{}, fmt.Errorf("failed prepare private key: %T", err)
+		}
+
+		privateKeyECDSA, err = crypto.HexToECDSA(preparePrivateKeyHex)
+		if err != nil {
+			return KeyChain{}, fmt.Errorf("failed to load private key: %T", err)
+=======
 func ImportOrGenerateWallet(privateKeyHex *string) (keychain KeyChain, err error) {
 	var privateKeyECDSA *ecdsa.PrivateKey
 
@@ -49,11 +109,19 @@ func ImportOrGenerateWallet(privateKeyHex *string) (keychain KeyChain, err error
 		privateKeyECDSA, err = crypto.HexToECDSA(*privateKeyHex)
 		if err != nil {
 			fmt.Errorf("Failed to load private key: %T", err)
+>>>>>>> 818eb69afb0aa3a363e0a4e046f986d202e43f22
 		}
 	}
 
 	keychain, err = importWallet(privateKeyECDSA)
 	if err != nil {
+<<<<<<< HEAD
+		return KeyChain{}, fmt.Errorf("error during import wallet: %v", err)
+	}
+
+	return keychain, err
+}
+=======
 		log.Fatalf("Error during import wallet: %v", err)
 	}
 	fmt.Println(keychain)
@@ -89,3 +157,4 @@ func double_main() {
 	}
 	log.Printf("Eth balance: %v", balance.String())
 }
+>>>>>>> 818eb69afb0aa3a363e0a4e046f986d202e43f22
