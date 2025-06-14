@@ -4,11 +4,8 @@ import (
 	"log"
 	"net"
 
-	"crypto_exchange/api/pb"
 	"crypto_exchange/internal/balance"
 	"crypto_exchange/pkg/db"
-
-	"google.golang.org/grpc"
 )
 
 func main() {
@@ -20,33 +17,23 @@ func main() {
 		Password: "postgres",
 		DBName: "crypto_exchange",
 	}
-
 	pool, err := db.NewPostgresDB(dbConfig)
 	if err != nil {
 		log.Fatalf("Ошибка подключения к БД: %v", err)
 	}
-	defer pool.Close() // закрываем соединение с БД при выходе из функции
+	defer pool.Close()
 
 	// Создаем репозиторий и сервис
 	balanceRepo := balance.NewRepository(pool)
-	balanceService := balance.NewService(balanceRepo)
+	balanceService := balance.NewService(balanceRepo) // баби буп надо будет использовать, когда сделаем обработчика подключения
 
 	// Создаем TCP слушателя
-	lis, err := net.Listen("tcp", ":50051")
+	listener, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("Ошибка прослушивания порта: %v", err)
 	}
+	defer listener.Close()
 
-	// Создаем новый gRPC сервер
-	s := grpc.NewServer()
+	log.Print("Сервер запущен на порту 50051")
 
-	// Регистрируем наш сервис
-	pb.RegisterBalanceServiceServer(s, balanceService)
-
-	log.Println("Сервер запущен на порту :50051")
-
-	// Запускаем сервер
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Ошибка запуска сервера: %v", err)
-	}
 }
