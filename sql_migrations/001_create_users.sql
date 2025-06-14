@@ -1,5 +1,0 @@
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    public_key TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-); 
