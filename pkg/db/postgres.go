@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"crypto_exchange/internal/orders"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"gorm.io/driver/postgres" // Драйвер для PostgreSQL
 	"gorm.io/gorm"
@@ -25,7 +27,14 @@ func Migrate(dsn string) (err error) {
 		return fmt.Errorf("ошибка подключения к базе данных: %v", err)
 	}
 
-	err = conn.AutoMigrate(&Users{}, &Balances{}, &TransactionHistory{})
+	models := []interface{}{
+		&User{},
+		&Balances{},
+		&TransactionHistory{},
+		&orders.Order{},
+	}
+
+	err = conn.AutoMigrate(models...) // models... - является распаковкой массива models на отдельные аргументы
 	if err != nil {
 		return fmt.Errorf("ошибка автомиграции: %v", err)
 	}
